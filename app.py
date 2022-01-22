@@ -25,9 +25,9 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route('/', methods=['GET'])
 @cross_origin()
 def show():
-  return 'LEXANALYTICS DEV'
+  return 'hello world'
 
-@app.route('/sign-up', methods=['POST'])
+@app.route('/add', methods=['POST'])
 
 def add_user():
   try:
