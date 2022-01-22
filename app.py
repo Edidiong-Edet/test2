@@ -27,7 +27,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 def show():
   return 'LEXANALYTICS DEV'
 
-@app.route('/add', methods=['POST'])
+@app.route('/sign-up', methods=['POST'])
 
 def add_user():
   try:
@@ -59,7 +59,7 @@ def add_user():
           resp.status_code = 200
           return resp
     else:
-      return jsonify('worries')
+      return jsonify('Something Went Wrong!')
   except Exception as e:
     
     print(e)
