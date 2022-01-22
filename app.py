@@ -50,7 +50,9 @@ def add_user():
       account = cursor.fetchone()
       if account:
          msg = 'Account already exists !'
-         return jsonify(msg)
+	 resp = jsonify(msg)
+	 resp.status_code = 401
+         return resp
        
       else:
           cursor.execute(sql, data)
