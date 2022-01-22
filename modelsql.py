@@ -20,10 +20,10 @@ import pymysql.cursors
 mysql = MySQL()
 
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'eddy'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'eddy'
-app.config['MYSQL_DATABASE_DB'] = 'public'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_DATABASE_USER'] = 'bb86f2cd287f4c'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'ac88626f'
+app.config['MYSQL_DATABASE_DB'] = 'heroku_014eb0a07cd8711'
+app.config['MYSQL_DATABASE_HOST'] = 'us-cdbr-east-05.cleardb.net'
 app.config['MYSQL_DATABASE_PORT'] = 3306
 mysql.init_app(app)
 
