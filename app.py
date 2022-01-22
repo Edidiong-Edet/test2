@@ -27,7 +27,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 def show():
   return 'hello world'
 
-@app.route('/add', methods=['POST'])
+@app.route('/sign-up', methods=['POST'])
 
 def add_user():
   try:
