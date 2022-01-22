@@ -25,7 +25,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route('/', methods=['GET'])
 @cross_origin()
 def show():
-  return 'hello world'
+  return 'LEXANALYTICS DEV'
 
 @app.route('/add', methods=['POST'])
 
