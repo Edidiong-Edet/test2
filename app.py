@@ -25,7 +25,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route('/', methods=['GET'])
 @cross_origin()
 def show():
-  return 'LEXANALYTICS DEV'
+  return 'hello world'
 
 @app.route('/sign-up', methods=['POST'])
 
@@ -49,9 +49,8 @@ def add_user():
       cursor.execute('SELECT * FROM sign_up WHERE Email= % s', (email, ))
       account = cursor.fetchone()
       if account:
-         msg = 'Account already exists !'
-	 resp = jsonify(msg)
-	 resp.status_code = 401
+         resp = jsonify('Account already exists')
+         resp.status_code = 401
          return resp
        
       else:
@@ -61,7 +60,7 @@ def add_user():
           resp.status_code = 200
           return resp
     else:
-      return jsonify('Something Went Wrong!')
+      return jsonify('worries')
   except Exception as e:
     
     print(e)
