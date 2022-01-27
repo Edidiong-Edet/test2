@@ -134,21 +134,26 @@ def confirmemail(token):
   # return 'logged in'
   try:
     email = confirm_token(token)
+    conn = mysql.connect()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute('SELECT * FROM sign_up WHERE Email= % s', (email, ))
+    account = cursor.fetchone()
+    if account['Confirmed']:
+      flash('Account already confirmed. Please login.', 'success')
+    else:
+     sql = "UPDATE sign_up SET Confirmed=%s WHERE Email=%s"
+     data=(True,email)
+     cursor.execute(sql, data)
+     conn.commit()
+     return'Account Confirmed'
+  
   except:
     return'link has expired'
-  conn = mysql.connect()
-  cursor = conn.cursor(pymysql.cursors.DictCursor)
-  cursor.execute('SELECT * FROM sign_up WHERE Email= % s', (email, ))
-  account = cursor.fetchone()
-  if account['onfirmed']:
-    flash('Account already confirmed. Please login.', 'success')
-  else:
-    sql = "UPDATE sign_up SET Confirmed=%s WHERE Email=%s"
-    data=(True,email)
-    cursor.execute(sql, data)
-    conn.commit()
-    flash('You have confirmed your account. Thanks!', 'success')
-  return redirect(url_for('main.home'))
+    
+  finally:
+    cursor.close() 
+    conn.close()
+  
 
 @app.route('/cases')
 def cases():
