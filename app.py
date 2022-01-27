@@ -1,16 +1,23 @@
 
 from werkzeug.security import generate_password_hash, check_password_hash
 # from werkzeug import generate_password_hash, check_password_hash
-
+from config import app
 from flaskext.mysql import MySQL
+from flask_mail import Message
+import jwt
+import smtplib
 
 import datetime
-from config import app
+from itsdangerous import URLSafeTimedSerializer
 
-from modelsql import mysql
+
+
+from modelsql import mysql,JWT_SECRET_KEY,SALT
+from mailconfig import mail
+
 
 import pymysql.cursors
-from flask import Flask, flash, redirect, render_template, request, session, abort, jsonify, url_for
+from flask import Flask, flash, redirect, render_template, request, session, abort, jsonify, url_for,make_response
 
 from flask_cors import CORS, cross_origin
 
@@ -25,10 +32,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route('/', methods=['GET'])
 @cross_origin()
 def show():
-  return 'hello world'
+  return 'LEXANALYTICS DEV'
 
 @app.route('/sign-up', methods=['POST'])
-
+@cross_origin()
 def add_user():
   try:
     _json = request.json
@@ -56,11 +63,19 @@ def add_user():
       else:
           cursor.execute(sql, data)
           conn.commit()
+          
+          token = generate_confirmation_token(email)
+          confirm_url = url_for('confirmemail', token=token, _external=True)
+          html = render_template('email.html', confirm_url=confirm_url, user=firstname)
+          
+          sendmail(email,html)
           resp = jsonify('User added successfully!')
           resp.status_code = 200
           return resp
     else:
-      return jsonify('worries')
+      resp = jsonify('Empty values in request')
+      resp.status_code = 409
+      return resp
   except Exception as e:
     
     print(e)
@@ -68,6 +83,72 @@ def add_user():
   finally:
     cursor.close() 
     conn.close()
+
+@app.route('/login', methods=['POST'])
+@cross_origin()
+def verify_user():
+  try:
+    _json = request.json
+    email = _json['email']
+    pwd = _json['pwd']
+		# validate the received values
+    if email and pwd and request.method == 'POST':
+			#do not save password as a plain text
+			# save edits
+      conn = mysql.connect()
+      cursor = conn.cursor(pymysql.cursors.DictCursor)
+      cursor.execute('SELECT * FROM sign_up WHERE Email= % s', (email, ))
+      account = cursor.fetchone()
+      if account:
+        userid=account['Id']
+        passw=account['Password']   
+        if check_password_hash(passw, pwd):
+          # jwt_token = generate_jwt_token(userid)
+          token =generate_jwt_token(email)
+          resp = jsonify('Password is correct')
+          resp.status_code = 200
+          return jsonify({'token' : token,'response':resp})
+        else:        
+          resp = jsonify('Wrong password')
+          resp.status_code = 401 
+          return resp 
+      else:
+          resp = jsonify('Email does not exist in database')
+          resp.status_code = 401
+          return resp
+    else:
+      resp = jsonify('Empty values in request or wrong request method used')
+      resp.status_code = 409
+      return resp
+      
+  except Exception as e:
+    
+    print(e)
+    
+  finally:
+    cursor.close() 
+    conn.close()
+
+@app.route('/confirm/<token>')
+def confirmemail(token):
+  # return 'logged in'
+  try:
+    email = confirm_token(token)
+  except:
+    return'link has expired'
+  conn = mysql.connect()
+  cursor = conn.cursor(pymysql.cursors.DictCursor)
+  cursor.execute('SELECT * FROM sign_up WHERE Email= % s', (email, ))
+  account = cursor.fetchone()
+  if account['onfirmed']:
+    flash('Account already confirmed. Please login.', 'success')
+  else:
+    sql = "UPDATE sign_up SET Confirmed=%s WHERE Email=%s"
+    data=(True,email)
+    cursor.execute(sql, data)
+    conn.commit()
+    flash('You have confirmed your account. Thanks!', 'success')
+  return redirect(url_for('main.home'))
 
 @app.route('/cases')
 def cases():
@@ -85,6 +166,38 @@ def cases():
 		cursor.close() 
 		conn.close()	
 
+
+def generate_jwt_token(value):
+    encoded_content = jwt.encode({
+      'public_id':value,
+      'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes = 30)},
+     JWT_SECRET_KEY,
+     algorithm="HS256")
+    return encoded_content
+
+def sendmail(useremail,template):
+  msg = Message('Lexanalytics Email Verification', sender =   'noreply@lexanalytics.io',html=template, recipients = [useremail])
+  msg.body = "Hey Paul, sending you this email from my Flask app, lmk if it works"
+  mail.send(msg)
+  mail_resp = jsonify('Message Sent')
+  mail_resp.status_code = 200
+  return mail_resp
+
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(JWT_SECRET_KEY)
+    return serializer.dumps(email, salt=SALT)
+
+def confirm_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(JWT_SECRET_KEY)
+    try:
+        email = serializer.loads(
+            token,
+            salt=SALT,
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
 
 if __name__ == "__main__":
     app.run(debug = True)
