@@ -107,7 +107,7 @@ def verify_user():
           token =generate_jwt_token(email)
           resp = jsonify('Password is correct')
           resp.status_code = 200
-          return jsonify({'token' : token,'response':resp})
+          return jsonify({'token' : token})
         else:        
           resp = jsonify('Wrong password')
           resp.status_code = 401 
