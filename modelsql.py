@@ -20,8 +20,8 @@ load_dotenv()
 
 mysql = MySQL()
 
-
-
+JWT_SECRET_KEY=os.getenv('JWT_SECRET_KEY')
+SALT=os.getenv('SALT')
 # MySQL configurations
 app.config['MYSQL_DATABASE_USER'] = os.getenv('DBUSER')
 app.config['MYSQL_DATABASE_PASSWORD'] = os.getenv('DBPASS')
