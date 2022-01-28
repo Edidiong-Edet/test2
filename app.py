@@ -156,7 +156,7 @@ def userdetails():
        
       else:
 
-        resp = jsonify('Account already exists')
+        resp = jsonify('User does not exist')
         resp.status_code = 401
         return resp
     else:
