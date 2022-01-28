@@ -84,6 +84,94 @@ def add_user():
     cursor.close() 
     conn.close()
 
+@app.route('/basic_info', methods=['POST'])
+@cross_origin()
+def basicinfo():
+  try:
+    _json = request.json
+    email = _json['Email']
+    birthdate= _json['birthdate']
+    gender = _json['gender']
+    country = _json['country']
+    state= _json['state']
+    orgtype=_json['org_type']
+    orgname=_json['org_name']
+    role=_json['org_role']
+    btdate=datetime.datetime.strptime(birthdate,"%d/%m/%Y")
+    pydate=btdate.strftime('%Y-%m-%d')
+    
+    date=datetime.datetime.now()
+    fdate=date.strftime('%Y-%m-%d %H:%M:%S')
+    
+		# validate the received values
+    if email  and request.method == 'POST':
+      sql = "INSERT INTO basic_info(Email,date_and_time_created,date_of_birth,gender,country,state) VALUES(%s, %s, %s, %s, %s, %s)"
+      data = (email,fdate,pydate,gender,country,state)
+      sql2 = "INSERT INTO legal_info(organization_type,name_of_organization,role_or_title,Email) VALUES(%s, %s, %s,%s)"
+      data2 = (orgtype,orgname,role,email)
+      conn = mysql.connect()
+      cursor = conn.cursor(pymysql.cursors.DictCursor)
+      cursor.execute('SELECT * FROM basic_info WHERE Email= % s', (email, ))
+      account = cursor.fetchone()
+      if account:
+         resp = jsonify('Account already exists')
+         resp.status_code = 401
+         return resp
+       
+      else:
+          cursor.execute(sql, data)
+          cursor.execute(sql2, data2)
+          conn.commit()
+          resp = jsonify('User Basic information added successfully!')
+          resp.status_code = 200
+          return resp
+    else:
+      resp = jsonify('Empty values in request')
+      resp.status_code = 409
+      return resp
+  except Exception as e:
+    
+    print(e)
+    
+  finally:
+    cursor.close() 
+    conn.close()
+
+@app.route('/user_details', methods=['POST'])
+@cross_origin()
+def userdetails():
+  try:
+    _json = request.json
+    email = _json['Email']
+		# validate the received values
+    if email  and request.method == 'POST':
+      conn = mysql.connect()
+      cursor = conn.cursor(pymysql.cursors.DictCursor)
+      cursor.execute('SELECT basic_info.*, sign_up.* FROM basic_info INNER JOIN sign_up ON basic_info.EMAIL = sign_up.EMAIL WHERE sign_up.Email= % s', (email, ))
+      account = cursor.fetchone()
+      if account:
+         resp = jsonify('User Exists')
+         resp.status_code = 200
+         return {'data':account}
+       
+      else:
+
+        resp = jsonify('Account already exists')
+        resp.status_code = 401
+        return resp
+    else:
+      resp = jsonify('Empty values in request')
+      resp.status_code = 409
+      return resp
+  except Exception as e:
+    
+    print(e)
+    
+  finally:
+    cursor.close() 
+    conn.close()
+
+
 @app.route('/login', methods=['POST'])
 @cross_origin()
 def verify_user():
