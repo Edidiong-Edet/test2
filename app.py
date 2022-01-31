@@ -34,6 +34,10 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 def show():
   return 'LEXANALYTICS DEV'
 
+@app.route('/test')
+def test():
+  return jsonify(name='eddy',status=404,msg='try again')
+
 @app.route('/sign-up', methods=['POST'])
 @cross_origin()
 def add_user():
@@ -140,14 +144,13 @@ def basicinfo():
 @app.route('/user_details', methods=['POST'])
 @cross_origin()
 def userdetails():
-  try:
-    _json = request.json
-    email = _json['Email']
+  try: 
+    email = request.json['Email']
 		# validate the received values
     if email  and request.method == 'POST':
       conn = mysql.connect()
       cursor = conn.cursor(pymysql.cursors.DictCursor)
-      cursor.execute('SELECT basic_info.*, sign_up.* FROM basic_info INNER JOIN sign_up ON basic_info.EMAIL = sign_up.EMAIL WHERE sign_up.Email= % s', (email, ))
+      cursor.execute('SELECT * FROM basic_info INNER JOIN sign_up ON basic_info.EMAIL = sign_up.EMAIL INNER JOIN legal_info ON basic_info.EMAIL = legal_info.EMAIL WHERE sign_up.Email= % s', (email, ))
       account = cursor.fetchone()
       if account:
          resp = jsonify('User Exists')
