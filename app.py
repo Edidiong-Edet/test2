@@ -251,7 +251,7 @@ def cases():
 	try:
 		conn = mysql.connect()
 		cursor = conn.cursor(pymysql.cursors.DictCursor)
-		cursor.execute("SELECT case_header.*,court.court_decided,issues_from_the_case.issues_from_causeof_actionx FROM case_header INNER JOIN court ON case_header.caseid = court.caseid INNER JOIN issues_from_the_case ON case_header.caseid = issues_from_the_case.caseid LIMIT 10")
+		cursor.execute("SELECT case_header.*,court.court_decided,issues_from_the_case.issues_from_causeof_action FROM case_header INNER JOIN court ON case_header.caseid = court.caseid INNER JOIN issues_from_the_case ON case_header.caseid = issues_from_the_case.caseid LIMIT 10")
 		rows = cursor.fetchall()
 		resp = jsonify(rows)
 		resp.status_code = 200
