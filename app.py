@@ -25,7 +25,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route('/', methods=['GET'])
 @cross_origin()
 def show():
-  return 'LEXANALYTICS DEV'
+  return 'LEXANALYTICS INC'
 
 @app.route('/test')
 def test():
@@ -257,7 +257,7 @@ def cases():
     cursor.close() 
     conn.close()	
 
-@app.route('/Lex_Case',methods=['GET'])
+@app.route('/Lex_Case',methods=['POST'])
 def singlecase():
   try:
     _json = request.json
