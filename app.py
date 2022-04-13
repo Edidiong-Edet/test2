@@ -257,12 +257,12 @@ def cases():
     cursor.close() 
     conn.close()	
 
-@app.route('/Lex_Case',methods=['POST'])
-def singlecase():
+@app.route('/Lex_Case/<id>',methods=['GET'])
+def singlecase(id):
   try:
     _json = request.json
-    case_id = _json['case_id']
-    # case_id=1
+    # case_id = _json['case_id']
+    case_id=id
     
     query="""SELECT case_header.*,issues_from_the_case.issues_from_causeof_action,main_judgement.main_judgement
              FROM case_header 
