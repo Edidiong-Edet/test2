@@ -6,19 +6,12 @@ from flaskext.mysql import MySQL
 from flask_mail import Message
 import jwt
 import smtplib
-
 import datetime
 from itsdangerous import URLSafeTimedSerializer
-
-
-
 from modelsql import mysql,JWT_SECRET_KEY,SALT
 from mailconfig import mail
-
-
 import pymysql.cursors
 from flask import Flask, flash, redirect, render_template, request, session, abort, jsonify, url_for,make_response
-
 from flask_cors import CORS, cross_origin
 
 
@@ -66,12 +59,10 @@ def add_user():
        
       else:
           cursor.execute(sql, data)
-          conn.commit()
-          
+          conn.commit()   
           token = generate_confirmation_token(email)
           confirm_url = url_for('confirmemail', token=token, _external=True)
           html = render_template('email.html', confirm_url=confirm_url, user=firstname)
-          
           sendmail(email,html)
           resp = jsonify('User added successfully!')
           resp.status_code = 200
@@ -201,7 +192,7 @@ def verify_user():
           return jsonify({'token' : token})
         else:        
           resp = jsonify('Wrong password')
-          resp.status_code = 403 
+          resp.status_code = 401 
           return resp 
       else:
           resp = jsonify('Email does not exist in database')
@@ -248,23 +239,48 @@ def confirmemail(token):
 
 @app.route('/cases')
 def cases():
-	try:
-		conn = mysql.connect()
-		cursor = conn.cursor(pymysql.cursors.DictCursor)
-		cursor.execute("SELECT case_header.*,court.court_decided,issues_from_the_case.issues_from_causeof_action FROM case_header INNER JOIN court ON case_header.caseid = court.caseid INNER JOIN issues_from_the_case ON case_header.caseid = issues_from_the_case.caseid LIMIT 10")
-		rows = cursor.fetchall()
-		resp = jsonify(rows)
-		resp.status_code = 200
-		return resp
-	except Exception as e:
-		print(e)
-	finally:
-		cursor.close() 
-		conn.close()	
+  try:
+    
+    conn = mysql.connect()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    query="""SELECT * 
+              FROM case_header 
+              LIMIT 5"""
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    resp = jsonify(rows)
+    resp.status_code = 200
+    return resp
+  except Exception as e:
+    print(e)  
+  finally:
+    cursor.close() 
+    conn.close()	
 
-
-
-
+@app.route('/Lex_Case',methods=['GET'])
+def singlecase():
+  try:
+    _json = request.json
+    case_id = _json['case_id']
+    # case_id=1
+    
+    query="""SELECT case_header.*,issues_from_the_case.issues_from_causeof_action,main_judgement.main_judgement
+             FROM case_header 
+             INNER JOIN issues_from_the_case ON case_header.caseid = issues_from_the_case.caseid 
+             INNER JOIN main_judgement ON case_header.caseid= main_judgement.caseid 
+             WHERE case_header.caseid= %s"""
+    conn = mysql.connect()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute(query, (case_id, ))
+    row = cursor.fetchall()
+    resp = jsonify(row)
+    resp.status_code = 200
+    return resp
+  except Exception as e:
+    print(e)
+  finally:
+    cursor.close() 
+    conn.close()
 
 def generate_jwt_token(value):
     encoded_content = jwt.encode({
