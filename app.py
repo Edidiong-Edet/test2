@@ -264,7 +264,7 @@ def singlecase(id):
     # case_id = _json['case_id']
     case_id=id
     
-    query="""SELECT case_header.*,issues_from_the_case.issues_from_causeof_action,main_judgement.        main_judgement,court.court_decided
+    query="""SELECT case_header.*,issues_from_the_case.issues_from_causeof_action,main_judgement.main_judgement,court.court_decided
              FROM case_header 
              INNER JOIN issues_from_the_case ON case_header.caseid = issues_from_the_case.caseid 
              INNER JOIN main_judgement ON case_header.caseid= main_judgement.caseid 
